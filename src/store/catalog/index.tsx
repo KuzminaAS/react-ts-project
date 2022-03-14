@@ -1,19 +1,8 @@
 import StoreModule from "../module";
-import qs from 'qs';
+import { parse, stringify } from 'qs';
+import {TStringifyOptions, TParseOptions, TCatalogStore} from '../../types/index';
 
-type TQS_OPTIONS = {
-    stringify: {
-    addQueryPrefix: boolean,
-    arrayFormat: "comma" | "indices" | "brackets" | "repeat",
-    encode: boolean
-  },
-  parse: {
-    ignoreQueryPrefix: boolean,
-    comma: boolean
-  }
-}
-
-const QS_OPTIONS: TQS_OPTIONS = {
+const QS_OPTIONS: TStringifyOptions & TParseOptions = {
   stringify: {
     addQueryPrefix: true,
     arrayFormat: 'comma',
@@ -23,13 +12,6 @@ const QS_OPTIONS: TQS_OPTIONS = {
     ignoreQueryPrefix: true,
     comma: true
   }
-}
-
-type TCatalogStore = {
-  page: number,
-  limit: number,
-  sort: any, 
-  query: any
 }
 
 interface ICatalogStore {
@@ -66,7 +48,7 @@ class CatalogStore extends StoreModule<ICatalogStore> {
    */
   async initParams(params?: {}): Promise<void>{
     // Параметры из URl. Их нужно валидирвать, приводить типы и брать толкьо нужные
-    const urlParams = qs.parse(window.location.search, QS_OPTIONS.parse) || {}
+    const urlParams = parse(window.location.search, QS_OPTIONS.parse) || {}
     let validParams = {} as ICatalogStore["params"];
     if (urlParams.page) validParams.page = Number(urlParams.page) || 1;
     if (urlParams.limit) validParams.limit = Number(urlParams.limit) || 10;
@@ -114,7 +96,7 @@ class CatalogStore extends StoreModule<ICatalogStore> {
     });
 
     // Запоминаем параметры в URL
-    let queryString = qs.stringify(newParams, QS_OPTIONS.stringify);
+    let queryString = stringify(newParams, QS_OPTIONS.stringify);
     const url = window.location.pathname + queryString + window.location.hash;
     if (historyReplace) {
       window.history.replaceState({}, '', url);
